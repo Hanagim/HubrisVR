@@ -1,0 +1,13 @@
+# Ignore Unity's temporary files
+Library/
+Temp/
+Obj/
+Build/
+BuildPlayer/
+.vs/
+.idea/
+.userprefs
+
+# But include important Unity files
+!Assets/
+!ProjectSettings/

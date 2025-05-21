@@ -4,7 +4,7 @@ using DG.Tweening;
 public class SlidingDoorTrigger : MonoBehaviour
 {
     public Transform doorMesh; // The visible part that moves
-    public float slideDistance = 2f; // How far the door moves down
+    public Vector3 slideOffset; // How far the door moves down
     public float slideDuration = 0.5f;
 
     private Vector3 closedPosition;
@@ -15,22 +15,33 @@ public class SlidingDoorTrigger : MonoBehaviour
     {
         if (doorMesh == null) doorMesh = transform; // Default to self
         closedPosition = doorMesh.localPosition;
-        openPosition = closedPosition - new Vector3(0, slideDistance, 0);
+        openPosition = closedPosition + slideOffset;
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag("Player")) return;
-
-        currentTween?.Kill();
-        currentTween = doorMesh.DOLocalMove(openPosition, slideDuration).SetEase(Ease.OutQuad);
+        if (other.CompareTag("Player"))
+        {
+            currentTween?.Kill();
+            currentTween = doorMesh.DOLocalMove(openPosition, slideDuration).SetEase(Ease.OutQuad);
+        }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (!other.CompareTag("Player")) return;
+        if (other.CompareTag("Player"))
+        {
 
+            currentTween?.Kill();
+            currentTween = doorMesh.DOLocalMove(closedPosition, slideDuration).SetEase(Ease.OutQuad);
+        }
+    }
+
+    [ContextMenu("Open Door")]
+    public void OpenDoor()
+    {
+      
         currentTween?.Kill();
-        currentTween = doorMesh.DOLocalMove(closedPosition, slideDuration).SetEase(Ease.OutQuad);
+        currentTween = doorMesh.DOLocalMove(openPosition, slideDuration).SetEase(Ease.OutQuad);
     }
 }

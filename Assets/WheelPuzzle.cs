@@ -46,7 +46,7 @@ public class WheelPuzzle : MonoBehaviour
         wheelText.SetText(currentRotation);
 
         float fill = ((wheel1Z + wheel2Z + wheel3Z) / 3f) / 360f;
-        materialInstance.SetFloat("Fill", Mathf.Clamp01(fill));
+        materialInstance.SetFloat("_Fill", Mathf.Clamp01(fill));
 
         float r = Mathf.Clamp01(redAngle / 360f);
         float g = Mathf.Clamp01(greenAngle / 360f);

@@ -1,6 +1,22 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-6504370332046161358
+--- !u!114 &-7392700575652678322
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15c38f6fa1940124db1ab7f6fe7268d1, type: 3}
+  m_Name: Signal Emitter
+  m_EditorClassIdentifier: 
+  m_Time: 14.9
+  m_Retroactive: 0
+  m_EmitOnce: 0
+  m_Asset: {fileID: 11400000, guid: 260087851dfb6e4469870e3b55afee2d, type: 2}
+--- !u!114 &-5993663301489569567
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
@@ -12,7 +28,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f10dd60657c6004587f237a7e90f8e4, type: 3}
   m_Name: AudioPlayableAsset
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 8300000, guid: e6261360a5991c7408dedffaff8d340e, type: 3}
+  m_Clip: {fileID: 8300000, guid: 4231dfd8613ee034688c1f2e747c43c9, type: 3}
   m_Loop: 0
   m_bufferingTime: 0.1
   m_ClipProperties:
@@ -41,8 +57,8 @@ MonoBehaviour:
   - m_Version: 1
     m_Start: 1.5666666666666667
     m_ClipIn: 0
-    m_Asset: {fileID: -6504370332046161358}
-    m_Duration: 27.663673469387756
+    m_Asset: {fileID: -5993663301489569567}
+    m_Duration: 28.499591836734695
     m_TimeScale: 1
     m_ParentTrack: {fileID: -1958288108204411405}
     m_EaseInDuration: 0
@@ -106,7 +122,7 @@ MonoBehaviour:
     m_PreExtrapolationMode: 0
     m_PostExtrapolationTime: 0
     m_PreExtrapolationTime: 0
-    m_DisplayName: ElevenLabs_2025-05-26T12_28_24_Charlotte_pre_sp95_s50_sb75_se0_b_m2
+    m_DisplayName: IntroMimi
   m_Markers:
     m_Objects: []
   m_TrackProperties:
@@ -147,10 +163,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15c38f6fa1940124db1ab7f6fe7268d1, type: 3}
   m_Name: Signal Emitter
   m_EditorClassIdentifier: 
-  m_Time: 3.6166666666666667
+  m_Time: 8.718927085399628
   m_Retroactive: 0
   m_EmitOnce: 0
   m_Asset: {fileID: 11400000, guid: b4ffb1e17f6b3a9438e44918c2396625, type: 2}
+--- !u!114 &1628178989239935876
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15c38f6fa1940124db1ab7f6fe7268d1, type: 3}
+  m_Name: Signal Emitter
+  m_EditorClassIdentifier: 
+  m_Time: 27.266666666666666
+  m_Retroactive: 0
+  m_EmitOnce: 0
+  m_Asset: {fileID: 11400000, guid: b486912cd75b85c4996aa4da0bb3a809, type: 2}
 --- !u!114 &2491364063468188133
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -176,6 +208,25 @@ MonoBehaviour:
     m_Objects:
     - {fileID: 5722409935911239753}
     - {fileID: 393202346783345107}
+    - {fileID: -7392700575652678322}
+    - {fileID: 5598378768827747979}
+    - {fileID: 1628178989239935876}
+--- !u!114 &5598378768827747979
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15c38f6fa1940124db1ab7f6fe7268d1, type: 3}
+  m_Name: Signal Emitter
+  m_EditorClassIdentifier: 
+  m_Time: 20.05
+  m_Retroactive: 0
+  m_EmitOnce: 0
+  m_Asset: {fileID: 11400000, guid: 5b7c1f86071d4ee4d8e972aefe94a3de, type: 2}
 --- !u!114 &5722409935911239753
 MonoBehaviour:
   m_ObjectHideFlags: 1

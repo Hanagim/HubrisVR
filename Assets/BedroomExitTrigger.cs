@@ -1,29 +1,25 @@
 using UnityEngine;
-using UnityEngine.Playables;
 
 public class BedroomExitTrigger : MonoBehaviour
 {
-    public string firstTimelineID = "LightsToMainRoom";
-    public string chainedTimelineID = "AVEIntro";
-    public string finalTimelineID = "AVEToWaterRoom";
+    [Tooltip("Timeline ID to play when the player exits the bedroom.")]
+    public string timelineID = "LightsToMainRoom";
 
+    [Tooltip("Should this trigger be disabled after firing once?")]
     public bool disableAfterTrigger = true;
 
     private bool triggered = false;
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!triggered && other.CompareTag("Player"))
-        {
-            triggered = true;
-            TimelineManager.Instance.PlayTimeline(firstTimelineID, () => {
-                TimelineManager.Instance.PlayTimeline(chainedTimelineID, () => {
-                    TimelineManager.Instance.PlayTimeline(finalTimelineID);
-                });
-            });
+        if (triggered || !other.CompareTag("Player"))
+            return;
 
-            if (disableAfterTrigger)
-                gameObject.SetActive(false);
-        }
+        triggered = true;
+
+        TimelineManager.Instance.PlayTimeline(timelineID);
+
+        if (disableAfterTrigger)
+            gameObject.SetActive(false);
     }
 }

@@ -13,6 +13,9 @@ public class PuzzleManager : MonoBehaviour
     public Transform wheelG;
     public Transform wheelB;
     public TextMeshProUGUI rgbText;
+    public TextMeshProUGUI rText;
+    public TextMeshProUGUI gText;
+    public TextMeshProUGUI bText;
 
     [Header("Dial (Fill)")]
     public Transform dial;
@@ -54,9 +57,14 @@ public class PuzzleManager : MonoBehaviour
             Color currentColor = new Color(r, g, b);
             materialInstance.SetColor("_SideColor", currentColor);
             rgbText.SetText($"Color RGB:\n{currentR}, {currentG}, {currentB}");
+            rText.SetText($"{ currentR}");
+            gText.SetText($"{ currentG}");
+            bText.SetText($"{currentB}");
 
-            // Fill from dial (Y rotation)
-            float angle = dial.localEulerAngles.y;
+
+
+        // Fill from dial (Y rotation)
+        float angle = dial.localEulerAngles.y;
             currentFill = Mathf.Clamp01(angle / 360f);
             materialInstance.SetFloat("_Fill", currentFill);
             fillText.SetText($"Fill Level:\n{Mathf.RoundToInt(currentFill * 100)}%");

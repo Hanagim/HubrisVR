@@ -1,85 +1,103 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Marker : MonoBehaviour
 {
-   	[SerializeField] private Transform tip;
-    	[SerializeField] private int pensize = 5;
-	
-	private Renderer _renderer;
-	private Color[] _colors;
-	private float _tipHeight;
-	
-	private RaycastHit _touch;
-	private	Whiteboard _whiteboard;
-	private Vector2 _touchPos, _lastTouchPos;
-	private bool _touchedLastFrame;
-	private Quaternion _lasttouchRot;
-		
+    [Header("Marker Settings")]
+    [SerializeField] private Transform tip;
+    [SerializeField] private int penSize = 5;
+
+    // Internal state
+    private Renderer tipRenderer;
+    private Color[] penColors;
+    private float tipHeight;
+
+    // Touch state
+    private RaycastHit touchInfo;
+    private WhiteBoard whiteboard;
+    private Vector2 touchUV, lastTouchUV;
+    private bool hasTouchedLastFrame;
+    private Quaternion lastTouchRotation;
+
     void Start()
     {
-        _renderer = _tip.GetComponent<Renderer>();
-	_colors = Enumerable.Repeat(_renderer.material.color, _penSize * _penSize).ToArray();
-	_tipHeight = _tip.localScale.y;
+        if (tip == null)
+        {
+            Debug.LogError("Marker tip not assigned.");
+            enabled = false;
+            return;
+        }
+
+        tipRenderer = tip.GetComponent<Renderer>();
+        if (tipRenderer == null)
+        {
+            Debug.LogError("Marker tip is missing a Renderer component.");
+            enabled = false;
+            return;
+        }
+
+        penColors = Enumerable.Repeat(tipRenderer.material.color, penSize * penSize).ToArray();
+        tipHeight = tip.localScale.y;
     }
 
-    
     void Update()
     {
-        Draw();
+        TryDraw();
     }
 
-	private void Draw()
-	{
-		if (Physics.Raycast(_tip.position, transform.up, out _touch, _tipHeight))
-		{
-			if (touch.transform.CompareTag("Whiteboard"))
-			{
-				if (_whiteboard == null)
-				{
- 					_whiteboard = _touch.transform.GetComponent<Whiteboard>();
-				}
-				
-				_touchPos = new Vector2(_touch.textureCoord.x, _touch.textureCoord.y)
+    private void TryDraw()
+    {
+        if (Physics.Raycast(tip.position, transform.up, out touchInfo, tipHeight))
+        {
+            if (touchInfo.transform.CompareTag("Whiteboard"))
+            {
+                HandleTouchOnWhiteboard();
+                return;
+            }
+        }
 
-				
-				var x = (int)(_touchPos.x * _whiteboard.textureSize.x - (_penSize/2));
-				var y = (int)(_touchPos.y * _whiteboard.textureSize.y - (_penSize/2));
+        // Reset if not touching a whiteboard
+        whiteboard = null;
+        hasTouchedLastFrame = false;
+    }
 
-				
-				if (y < 0 || y > _whiteboard.textureSize.y || x < 0 || x > _whiteboard.textureSize.x ) return;
-				
-				if (_touchedLastFrame)
-				{
-					_whiteboard.texture.SetPixels(x, y, _penSize, _penSize, _colors);
-					
-					for (float f = 0.01f; f < 1.00f; f += 0.01f)
-					{
-						var lerpX = (int)Mathf.Lerp(_lastTouchPos.x, x, f);
-						var lerpY = (int)Mathf.Lerp(_lastTouchPos.y, y, f);
-						_whiteboard.texture.SetPixels(LerpX, LerpY, _penSize, _penSize, _colors);
-					}
-					
+    private void HandleTouchOnWhiteboard()
+    {
+        if (whiteboard == null)
+        {
+            whiteboard = touchInfo.transform.GetComponent<WhiteBoard>();
+            if (whiteboard == null)
+            {
+                Debug.LogWarning("Whiteboard tag found but no WhiteBoard component.");
+                return;
+            }
+        }
 
-					transform.rotation = _lastTouchRot;
+        touchUV = touchInfo.textureCoord;
 
-					_whiteboard.texture.Apply();
-				}
-				
+        int x = Mathf.Clamp((int)(touchUV.x * whiteboard.textureSize.x - (penSize / 2)), 0, (int)whiteboard.textureSize.x);
+        int y = Mathf.Clamp((int)(touchUV.y * whiteboard.textureSize.y - (penSize / 2)), 0, (int)whiteboard.textureSize.y);
 
+        if (hasTouchedLastFrame)
+        {
+            whiteboard.texture.SetPixels(x, y, penSize, penSize, penColors);
 
-				_lastTouchPos = new Vector2(x, y);
-				_LastTouchRot = transform.rotation;
-				_touchedLastFrame = true;
-				return;
+            // Interpolate between previous and current touch for smooth drawing
+            for (float t = 0.01f; t < 1f; t += 0.01f)
+            {
+                int lerpX = (int)Mathf.Lerp(lastTouchUV.x, x, t);
+                int lerpY = (int)Mathf.Lerp(lastTouchUV.y, y, t);
+                whiteboard.texture.SetPixels(lerpX, lerpY, penSize, penSize, penColors);
+            }
 
+            transform.rotation = lastTouchRotation;
+            whiteboard.texture.Apply();
+        }
 
-			}	
-		}
-
-
-		_whiteboard = null;
-		_touchedLastFrame = false;
-	}
+        lastTouchUV = new Vector2(x, y);
+        lastTouchRotation = transform.rotation;
+        hasTouchedLastFrame = true;
+    }
 }

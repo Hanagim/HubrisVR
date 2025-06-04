@@ -5,8 +5,8 @@ using TMPro;
 public class PuzzleManager : MonoBehaviour
 {
     [Header("Shader")]
-    public Renderer waterRenderer;
-    private Material materialInstance;
+    public Renderer[] waterRenderers; // All 3 tank renderers
+    private Material[] materialInstances;
 
     [Header("RGB Wheels")]
     public Transform wheelR;
@@ -17,69 +17,84 @@ public class PuzzleManager : MonoBehaviour
     public TextMeshProUGUI gText;
     public TextMeshProUGUI bText;
 
-    [Header("Dial (Fill)")]
-    public Transform dial;
-    public TextMeshProUGUI fillText;
+    [Header("Dials (Fill)")]
+    public Transform[] dials; // 3 dials
+    public TextMeshProUGUI[] fillTexts;
 
-    [Header("Target Fill (0-1)")]
-    public float targetFill = 0.65f;
-    public float fillTolerance = 0.02f;
-    [Header("Target RGB Color (0-255)")]
-    public int targetR = 51;   // Example: 0.2 * 255
-    public int targetG = 102;  // Example: 0.4 * 255
-    public int targetB = 255;  // Example: 1.0 * 255
+    [Header("Target Fills (0–100)")]
+    public float[] targetFills = new float[3]; // e.g., {65, 40, 90}
+    public float fillTolerance = 2f; // in 0–100 space
 
-    public int colorTolerance = 10;  // Acceptable margin (in RGB range)
+    [Header("Target RGB Color (0–255)")]
+    public int targetR = 51;
+    public int targetG = 102;
+    public int targetB = 255;
+    public int colorTolerance = 10;
 
     [Header("On Puzzle Solved")]
     public UnityEvent onSolved;
 
-    private float currentFill;
+    private float[] currentFills = new float[3];
     private int currentR, currentG, currentB;
 
     void Start()
     {
-        materialInstance = waterRenderer.material;
+        materialInstances = new Material[waterRenderers.Length];
+        for (int i = 0; i < waterRenderers.Length; i++)
+            materialInstances[i] = waterRenderers[i].material;
     }
 
     void Update()
     {
-        // RGB from wheels
-            // RGB from wheels (Z rotation → 0–1 → 0–255)
-            float r = Mathf.Clamp01(wheelR.localEulerAngles.z / 360f);
-            float g = Mathf.Clamp01(wheelG.localEulerAngles.z / 360f);
-            float b = Mathf.Clamp01(wheelB.localEulerAngles.z / 360f);
+        // Read RGB wheels
+        float r = Mathf.Clamp01(wheelR.localEulerAngles.z / 360f);
+        float g = Mathf.Clamp01(wheelG.localEulerAngles.z / 360f);
+        float b = Mathf.Clamp01(wheelB.localEulerAngles.z / 360f);
 
-            currentR = Mathf.RoundToInt(r * 255);
-            currentG = Mathf.RoundToInt(g * 255);
-            currentB = Mathf.RoundToInt(b * 255);
+        currentR = Mathf.RoundToInt(r * 255);
+        currentG = Mathf.RoundToInt(g * 255);
+        currentB = Mathf.RoundToInt(b * 255);
 
-            Color currentColor = new Color(r, g, b);
-            materialInstance.SetColor("_SideColor", currentColor);
-            rgbText.SetText($"Color RGB:\n{currentR}, {currentG}, {currentB}");
-            rText.SetText($"{ currentR}");
-            gText.SetText($"{ currentG}");
-            bText.SetText($"{currentB}");
+        Color currentColor = new Color(r, g, b);
+        foreach (var mat in materialInstances)
+            mat.SetColor("_SideColor", currentColor);
 
+        rgbText.SetText($"Color RGB:\n{currentR}, {currentG}, {currentB}");
+        rText.SetText($"{currentR}");
+        gText.SetText($"{currentG}");
+        bText.SetText($"{currentB}");
 
+        // Read each fill dial
+        for (int i = 0; i < dials.Length; i++)
+        {
+            float angle = dials[i].localEulerAngles.y;
+            float fill = Mathf.Clamp01(angle / 360f);
+            currentFills[i] = fill * 100f; // Convert to 0–100
+            materialInstances[i].SetFloat("_Fill", fill);
 
-        // Fill from dial (Y rotation)
-        float angle = dial.localEulerAngles.y;
-            currentFill = Mathf.Clamp01(angle / 360f);
-            materialInstance.SetFloat("_Fill", currentFill);
-            fillText.SetText($"Fill Level:\n{Mathf.RoundToInt(currentFill * 100)}%");
+            if (fillTexts != null && fillTexts.Length > i)
+                fillTexts[i].SetText($"Fill Level:\n{Mathf.RoundToInt(currentFills[i])}%");
+        }
     }
 
     public void TrySolve()
     {
         bool colorMatch =
-        Mathf.Abs(currentR - targetR) <= colorTolerance &&
-        Mathf.Abs(currentG - targetG) <= colorTolerance &&
-        Mathf.Abs(currentB - targetB) <= colorTolerance;
+            Mathf.Abs(currentR - targetR) <= colorTolerance &&
+            Mathf.Abs(currentG - targetG) <= colorTolerance &&
+            Mathf.Abs(currentB - targetB) <= colorTolerance;
 
-        bool fillMatch = Mathf.Abs(currentFill - targetFill) < fillTolerance;
+        bool allFillsMatch = true;
+        for (int i = 0; i < targetFills.Length; i++)
+        {
+            if (Mathf.Abs(currentFills[i] - targetFills[i]) > fillTolerance)
+            {
+                allFillsMatch = false;
+                break;
+            }
+        }
 
-        if (colorMatch && fillMatch)
+        if (colorMatch && allFillsMatch)
         {
             Debug.Log("Puzzle Solved!");
             onSolved.Invoke();

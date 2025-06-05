@@ -73,7 +73,7 @@ public class PuzzleManager : MonoBehaviour
             materialInstances[i].SetFloat("_Fill", fill);
 
             if (fillTexts != null && fillTexts.Length > i)
-                fillTexts[i].SetText($"Fill Level:\n{Mathf.RoundToInt(currentFills[i])}%");
+                fillTexts[i].SetText($"{Mathf.RoundToInt(currentFills[i])}%");
         }
     }
 

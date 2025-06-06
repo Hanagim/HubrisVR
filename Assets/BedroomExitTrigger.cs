@@ -16,7 +16,7 @@ public class BedroomExitTrigger : MonoBehaviour
             return;
 
         triggered = true;
-
+        TimelineManager.Instance.StopAllTimelines();
         TimelineManager.Instance.PlayTimeline(timelineID);
 
         if (disableAfterTrigger)

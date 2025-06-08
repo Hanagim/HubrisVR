@@ -97,6 +97,18 @@ public class TimelineManager : MonoBehaviour
         }
     }
 
+    public void StopAllTimelinesExcept(string exceptID = "")
+    {
+        foreach (var entry in timelineDict)
+        {
+            if (entry.Key != exceptID && entry.Value.state == PlayState.Playing)
+            {
+                entry.Value.Stop();
+            }
+        }
+    }
+
+
     public void Transition(string fromID, string toID)
     {
         StopTimeline(fromID);

@@ -3,7 +3,7 @@ using UnityEngine;
 public class BedroomExitTrigger : MonoBehaviour
 {
     [Tooltip("Timeline ID to play when the player exits the bedroom.")]
-    public string timelineID = "LightsToMainRoom";
+    public string timelineID;
 
     [Tooltip("Should this trigger be disabled after firing once?")]
     public bool disableAfterTrigger = true;

@@ -6,16 +6,17 @@ using UnityEngine.SceneManagement;
 public class SceneTransitionManager : MonoBehaviour
 {
     public FadeScreen fadeScreen;
-    public static SceneTransitionManager singleton;
+    public SceneTransitionManager singleton;
 
     private void Awake()
     {
-        if (singleton && singleton != this)
-            Destroy(singleton);
-
-        singleton = this;
+     
     }
 
+    public void GoToSceneSimple()
+    {
+        
+    }
     public void GoToScene(int sceneIndex)
     {
         StartCoroutine(GoToSceneRoutine(sceneIndex));
@@ -27,7 +28,7 @@ public class SceneTransitionManager : MonoBehaviour
         yield return new WaitForSeconds(fadeScreen.fadeDuration);
 
         //Launch the new scene
-        SceneManager.LoadScene(sceneIndex);
+        SceneManager.LoadScene(1);
     }
 
     public void GoToSceneAsync(int sceneIndex)

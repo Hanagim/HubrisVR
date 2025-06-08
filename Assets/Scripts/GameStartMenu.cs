@@ -7,6 +7,7 @@ public class GameStartMenu : MonoBehaviour
 {
     [Header("UI Pages")]
     public GameObject mainMenu;
+    public SceneTransitionManager SceneManager;
     public GameObject options;
     public GameObject about;
 
@@ -42,8 +43,9 @@ public class GameStartMenu : MonoBehaviour
 
     public void StartGame()
     {
+        Debug.Log("Starting Game");
         HideAll();
-        SceneTransitionManager.singleton.GoToSceneAsync(1);
+        SceneManager.GoToScene(1);
     }
 
     public void HideAll()

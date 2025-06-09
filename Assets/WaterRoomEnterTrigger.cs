@@ -3,7 +3,7 @@ using UnityEngine.Playables;
 
 public class WaterRoomEnterTrigger : MonoBehaviour
 {
-    public string firstTimelineID = "WaterRoomIntro";
+    public string timelineID = "WaterRoomIntro";
 
     public bool disableAfterTrigger = true;
 
@@ -11,14 +11,15 @@ public class WaterRoomEnterTrigger : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!triggered && other.CompareTag("Player"))
-        {
-            triggered = true;
-            TimelineManager.Instance.PlayTimeline(firstTimelineID, () => {
-            });
+        if (triggered || !other.CompareTag("Player"))
+            return;
 
-            if (disableAfterTrigger)
-                gameObject.SetActive(false);
-        }
+        triggered = true;
+        TimelineManager.Instance.StopAllTimelinesExcept(timelineID);
+        TimelineManager.Instance.PlayTimeline(timelineID);
+
+
+        if (disableAfterTrigger)
+            gameObject.SetActive(false);
     }
 }

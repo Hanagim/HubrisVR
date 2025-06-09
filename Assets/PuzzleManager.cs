@@ -18,12 +18,12 @@ public class PuzzleManager : MonoBehaviour
     public TextMeshProUGUI bText;
 
     [Header("Dials (Fill)")]
-    public Transform[] dials; // 3 dials
+    public Transform[] dials;
     public TextMeshProUGUI[] fillTexts;
 
     [Header("Target Fills (0–100)")]
-    public float[] targetFills = new float[3]; // e.g., {65, 40, 90}
-    public float fillTolerance = 2f; // in 0–100 space
+    public float[] targetFills = new float[3];
+    public float fillTolerance = 2f;
 
     [Header("Target RGB Color (0–255)")]
     public int targetR = 51;
@@ -34,6 +34,10 @@ public class PuzzleManager : MonoBehaviour
     [Header("On Puzzle Solved")]
     public UnityEvent onSolved;
 
+    [Header("Incorrect Attempt Sound")]
+    public AudioClip incorrectSound;
+    private AudioSource audioSource;
+
     private float[] currentFills = new float[3];
     private int currentR, currentG, currentB;
 
@@ -42,11 +46,15 @@ public class PuzzleManager : MonoBehaviour
         materialInstances = new Material[waterRenderers.Length];
         for (int i = 0; i < waterRenderers.Length; i++)
             materialInstances[i] = waterRenderers[i].material;
+
+        // Set up audio source
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+            audioSource = gameObject.AddComponent<AudioSource>();
     }
 
     void Update()
     {
-        // Read RGB wheels
         float r = Mathf.Clamp01(wheelR.localEulerAngles.z / 360f);
         float g = Mathf.Clamp01(wheelG.localEulerAngles.z / 360f);
         float b = Mathf.Clamp01(wheelB.localEulerAngles.z / 360f);
@@ -64,12 +72,11 @@ public class PuzzleManager : MonoBehaviour
         gText.SetText($"{currentG}");
         bText.SetText($"{currentB}");
 
-        // Read each fill dial
         for (int i = 0; i < dials.Length; i++)
         {
             float angle = dials[i].localEulerAngles.y;
             float fill = Mathf.Clamp01(angle / 360f);
-            currentFills[i] = fill * 100f; // Convert to 0–100
+            currentFills[i] = fill * 100f;
             materialInstances[i].SetFloat("_Fill", fill);
 
             if (fillTexts != null && fillTexts.Length > i)
@@ -102,6 +109,10 @@ public class PuzzleManager : MonoBehaviour
         else
         {
             Debug.Log("Incorrect combination.");
+            if (incorrectSound != null && audioSource != null)
+            {
+                audioSource.PlayOneShot(incorrectSound);
+            }
         }
     }
 }

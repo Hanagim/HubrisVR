@@ -48,6 +48,8 @@ public class GameStartMenu : MonoBehaviour
         SceneManager.GoToScene(1);
     }
 
+
+
     public void HideAll()
     {
         mainMenu.SetActive(false);

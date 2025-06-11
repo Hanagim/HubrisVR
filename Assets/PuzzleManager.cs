@@ -4,6 +4,16 @@ using TMPro;
 
 public class PuzzleManager : MonoBehaviour
 {
+    [Header("Hint System")]
+    public AudioClip hintVoiceLine;
+    public float firstHintDelay = 120f;      // First hint at 2 minutes
+    public float repeatHintInterval = 60f;   // Subsequent hints every 60 seconds
+
+    private float timeSincePuzzleStarted = 0f;
+    private bool puzzleSolved = false;
+    private float nextHintTime = 0f;
+
+
     [Header("Shader")]
     public Renderer[] waterRenderers; // All 3 tank renderers
     private Material[] materialInstances;
@@ -82,6 +92,28 @@ public class PuzzleManager : MonoBehaviour
             if (fillTexts != null && fillTexts.Length > i)
                 fillTexts[i].SetText($"{Mathf.RoundToInt(currentFills[i])}%");
         }
+
+        if (!puzzleSolved)
+        {
+            timeSincePuzzleStarted += Time.deltaTime;
+
+            if (timeSincePuzzleStarted >= nextHintTime)
+            {
+                if (hintVoiceLine != null && audioSource != null)
+                {
+                    audioSource.PlayOneShot(hintVoiceLine);
+                    Debug.Log("Hint played at: " + timeSincePuzzleStarted + " seconds");
+                }
+
+                // Schedule next hint
+                if (nextHintTime == 0f)
+                    nextHintTime = firstHintDelay + repeatHintInterval;
+                else
+                    nextHintTime += repeatHintInterval;
+            }
+        }
+
+
     }
 
     public void TrySolve()
@@ -104,6 +136,7 @@ public class PuzzleManager : MonoBehaviour
         if (colorMatch && allFillsMatch)
         {
             Debug.Log("Puzzle Solved!");
+            puzzleSolved = true;
             onSolved.Invoke();
         }
         else

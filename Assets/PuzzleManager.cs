@@ -6,40 +6,22 @@ public class PuzzleManager : MonoBehaviour
 {
     [Header("Hint System")]
     public AudioClip hintVoiceLine;
-    public float firstHintDelay = 120f;      // First hint at 2 minutes
-    public float repeatHintInterval = 60f;   // Subsequent hints every 60 seconds
+    public float firstHintDelay = 120f;
+    public float repeatHintInterval = 60f;
 
     private float timeSincePuzzleStarted = 0f;
     private bool puzzleSolved = false;
     private float nextHintTime = 0f;
+    private bool puzzleStarted = false;
 
-
-    [Header("Shader")]
-    public Renderer[] waterRenderers; // All 3 tank renderers
-    private Material[] materialInstances;
-
-    [Header("RGB Wheels")]
-    public Transform wheelR;
-    public Transform wheelG;
-    public Transform wheelB;
-    public TextMeshProUGUI rgbText;
-    public TextMeshProUGUI rText;
-    public TextMeshProUGUI gText;
-    public TextMeshProUGUI bText;
-
-    [Header("Dials (Fill)")]
-    public Transform[] dials;
-    public TextMeshProUGUI[] fillTexts;
+    [Header("Wheels (Fill Control)")]
+    public Transform[] wheels; // 6 wheels, A–F
+    public TextMeshProUGUI[] fillTexts; // 6 fill percentage texts
+    public Renderer[] waterRenderers; // 6 tanks with shader
 
     [Header("Target Fills (0–100)")]
-    public float[] targetFills = new float[3];
+    public float[] targetFills = new float[6]; // A–F target fill percentages
     public float fillTolerance = 2f;
-
-    [Header("Target RGB Color (0–255)")]
-    public int targetR = 51;
-    public int targetG = 102;
-    public int targetB = 255;
-    public int colorTolerance = 10;
 
     [Header("On Puzzle Solved")]
     public UnityEvent onSolved;
@@ -48,16 +30,17 @@ public class PuzzleManager : MonoBehaviour
     public AudioClip incorrectSound;
     private AudioSource audioSource;
 
-    private float[] currentFills = new float[3];
-    private int currentR, currentG, currentB;
+    private float[] currentFills = new float[6];
+    private Material[] materialInstances;
 
     void Start()
     {
+        // Setup materials
         materialInstances = new Material[waterRenderers.Length];
         for (int i = 0; i < waterRenderers.Length; i++)
             materialInstances[i] = waterRenderers[i].material;
 
-        // Set up audio source
+        // Setup audio
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
             audioSource = gameObject.AddComponent<AudioSource>();
@@ -65,75 +48,65 @@ public class PuzzleManager : MonoBehaviour
 
     void Update()
     {
-        float r = Mathf.Clamp01(wheelR.localEulerAngles.z / 360f);
-        float g = Mathf.Clamp01(wheelG.localEulerAngles.z / 360f);
-        float b = Mathf.Clamp01(wheelB.localEulerAngles.z / 360f);
+        if (!puzzleStarted || puzzleSolved)
+            return;
 
-        currentR = Mathf.RoundToInt(r * 255);
-        currentG = Mathf.RoundToInt(g * 255);
-        currentB = Mathf.RoundToInt(b * 255);
+        timeSincePuzzleStarted += Time.deltaTime;
 
-        Color currentColor = new Color(r, g, b);
-        foreach (var mat in materialInstances)
-            mat.SetColor("_SideColor", currentColor);
-
-        rgbText.SetText($"Color RGB:\n{currentR}, {currentG}, {currentB}");
-        rText.SetText($"{currentR}");
-        gText.SetText($"{currentG}");
-        bText.SetText($"{currentB}");
-
-        for (int i = 0; i < dials.Length; i++)
+        if (timeSincePuzzleStarted >= nextHintTime)
         {
-            float angle = dials[i].localEulerAngles.y;
-            float fill = Mathf.Clamp01(angle / 360f);
-            currentFills[i] = fill * 100f;
-            materialInstances[i].SetFloat("_Fill", fill);
-
-            if (fillTexts != null && fillTexts.Length > i)
-                fillTexts[i].SetText($"{Mathf.RoundToInt(currentFills[i])}%");
-        }
-
-        if (!puzzleSolved)
-        {
-            timeSincePuzzleStarted += Time.deltaTime;
-
-            if (timeSincePuzzleStarted >= nextHintTime)
+            if (hintVoiceLine != null && audioSource != null)
             {
-                if (hintVoiceLine != null && audioSource != null)
-                {
-                    audioSource.PlayOneShot(hintVoiceLine);
-                    Debug.Log("Hint played at: " + timeSincePuzzleStarted + " seconds");
-                }
-
-                // Schedule next hint
-                if (nextHintTime == 0f)
-                    nextHintTime = firstHintDelay + repeatHintInterval;
-                else
-                    nextHintTime += repeatHintInterval;
+                audioSource.PlayOneShot(hintVoiceLine);
+                Debug.Log("Hint played at: " + timeSincePuzzleStarted + " seconds");
             }
+
+            nextHintTime += repeatHintInterval;
         }
 
+        for (int i = 0; i < wheels.Length; i++)
+        {
+            float angle = wheels[i].localEulerAngles.z;
+            float normalized = Mathf.Clamp01(angle / 360f);
+            float fill = normalized * 100f;
 
+            currentFills[i] = fill;
+
+            if (materialInstances != null && i < materialInstances.Length)
+                materialInstances[i].SetFloat("_Fill", normalized);
+
+            if (fillTexts != null && i < fillTexts.Length)
+                fillTexts[i].SetText($"{Mathf.RoundToInt(fill)}%");
+        }
+    }
+
+    public void StartPuzzle()
+    {
+        if (!puzzleStarted)
+        {
+            puzzleStarted = true;
+            timeSincePuzzleStarted = 0f;
+            nextHintTime = firstHintDelay;
+            Debug.Log("Puzzle started.");
+        }
     }
 
     public void TrySolve()
     {
-        bool colorMatch =
-            Mathf.Abs(currentR - targetR) <= colorTolerance &&
-            Mathf.Abs(currentG - targetG) <= colorTolerance &&
-            Mathf.Abs(currentB - targetB) <= colorTolerance;
+        if (puzzleSolved)
+            return;
 
-        bool allFillsMatch = true;
+        bool allMatch = true;
         for (int i = 0; i < targetFills.Length; i++)
         {
             if (Mathf.Abs(currentFills[i] - targetFills[i]) > fillTolerance)
             {
-                allFillsMatch = false;
+                allMatch = false;
                 break;
             }
         }
 
-        if (colorMatch && allFillsMatch)
+        if (allMatch)
         {
             Debug.Log("Puzzle Solved!");
             puzzleSolved = true;
@@ -143,9 +116,7 @@ public class PuzzleManager : MonoBehaviour
         {
             Debug.Log("Incorrect combination.");
             if (incorrectSound != null && audioSource != null)
-            {
                 audioSource.PlayOneShot(incorrectSound);
-            }
         }
     }
 }
